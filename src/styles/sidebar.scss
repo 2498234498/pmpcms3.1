@@ -1,0 +1,192 @@
+#app {
+  // 主体区域
+  .main-container {
+    min-height: 100%;
+    transition: margin-left .28s;
+    margin-left: $sidebarWidth;
+    position: relative;
+  }
+  // 侧边栏
+  .sidebar-container {
+    transition: width 0.28s;
+    width: calc(#{$sidebarWidth} - 6px) !important;
+    height: calc(100% - 6px - 55px); // Logobar
+    position: fixed;
+    font-size: 0px;
+    border-radius: 3px;
+    // top: $LogobarHei;
+    top: $LogobarHei;
+    bottom: 0;
+    left: 0;
+    z-index: 1001;
+    overflow: hidden;
+    background: #2066CB;
+    margin: 3px;
+    transform: translateZ(0);
+    .sidebar-title {
+      position: relative;
+      height: 56px;
+      line-height: 56px;
+      padding: 0 20px;
+      span {
+        color: #fff;
+        font-size: 18px;
+        // font-weight: bold;
+      }
+      i {
+        font-size: 20px;
+        color: #fff;
+        margin-right: 16px;
+      }
+      .right {
+        margin-right: 0;
+        margin-left: 10px;
+        font-size: 14px;
+        background: #00A2E9;
+        border-radius: 100%;
+        font-weight: bold;
+        padding: 3px;
+        cursor: pointer;
+        transition: .38s;
+      }
+    }
+    .el-scrollbar {
+      height: calc(100% - 44px);
+      .menu-wrapper {
+        border-bottom: 1px solid #DCDDDD;
+        & > a {
+          border-bottom: 0;
+          & > li > span {
+            font-size: 14px;
+          }
+        }
+      }
+      .el-menu-item, .el-submenu__title {
+        height: 40px;
+        line-height: 40px;
+        font-size: 14px;
+      }
+    }
+    //reset element-ui css
+    .horizontal-collapse-transition {
+      transition: 0s width ease-in-out, 0s padding-left ease-in-out, 0s padding-right ease-in-out;
+    }
+    .scrollbar-wrapper {
+      height: 100%;
+      .el-scrollbar__view {
+        height: 100%;
+      }
+    }
+    .is-horizontal {
+      display: none;
+    }
+    a {
+      display: inline-block;
+      width: 100%;
+      overflow: hidden;
+      border-bottom: 1px solid #DCDDDD;
+      &:last-child {
+        border-bottom: 0;
+      }
+    }
+    .svg-icon {
+      margin-right: 16px;
+    }
+    .el-menu {
+      border: none;
+      height: 100%;
+      width: 100% !important;
+    }
+  }
+  .hideSidebar {
+    .sidebar-container {
+      width: 36px !important;
+      .sidebar-title {
+        padding: 0 10px;
+        i, span {
+          display: none;
+        }
+        .right {
+          display: inline-block;
+          width: 20px;
+          margin-left: 0;
+          transform: rotate(180deg) translateZ(0);;
+        }
+      }
+    }
+    .main-container {
+      margin-left: 39px;
+    }
+    .submenu-title-noDropdown {
+      padding-left: 10px !important;
+      position: relative;
+      .el-tooltip {
+        padding: 0 10px !important;
+      }
+    }
+    .el-submenu {
+      overflow: hidden;
+      &>.el-submenu__title {
+        padding-left: 10px !important;
+        .el-submenu__icon-arrow {
+          display: none;
+        }
+      }
+    }
+    .el-menu--collapse {
+      .el-submenu {
+        &>.el-submenu__title {
+          &>span {
+            height: 0;
+            width: 0;
+            overflow: hidden;
+            visibility: hidden;
+            display: inline-block;
+          }
+        }
+      }
+    }
+  }
+  .sidebar-container .nest-menu .el-submenu>.el-submenu__title,
+  .sidebar-container .el-submenu .el-menu-item {
+    min-width: $sidebarWidth !important;
+    background-color: $subMenuBg !important;
+    text-indent: 13px;
+    &:hover {
+      background-color: $menuHover !important;
+    }
+  }
+  .el-submenu__title, .el-menu-item span {
+    // font-weight: bold;
+    font-size: 12px;
+  }
+  .el-menu--collapse .el-menu .el-submenu {
+    min-width: $sidebarWidth !important;
+  }
+
+  //适配移动端
+  .mobile {
+    .main-container {
+      margin-left: 0px;
+    }
+    .sidebar-container {
+      transition: transform .28s;
+      width: $sidebarWidth !important;
+    }
+    &.hideSidebar {
+      .sidebar-container {
+        transition-duration: 0.3s;
+        transform: translate3d(-$sidebarWidth, 0, 0);
+        .sidebar-title {
+          padding: 0 10px;
+        }
+      }
+    }
+  }
+  .withoutAnimation {
+    .main-container,
+    .sidebar-container {
+      transition: none;
+    }
+  }
+}

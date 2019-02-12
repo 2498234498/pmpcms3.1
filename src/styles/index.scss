@@ -1,0 +1,224 @@
+@import './mixin.scss';
+@import './transition.scss';
+@import './element-ui.scss';
+@import './sidebar.scss';
+@import './reset.scss';
+@import './dialog.scss';
+
+
+body {
+  height: 100%;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
+}
+
+label {
+  font-weight: 700;
+}
+
+html {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+#app{
+  height: 100%;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+a,
+a:focus,
+a:hover {
+  cursor: pointer;
+  color: inherit;
+  outline: none;
+  text-decoration: none;
+}
+
+div:focus{
+  outline: none;
+ }
+
+a:focus,
+a:active {
+  outline: none;
+}
+
+a,
+a:focus,
+a:hover {
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+}
+
+.clearfix {
+  &:after {
+    visibility: hidden;
+    display: block;
+    font-size: 0;
+    content: " ";
+    clear: both;
+    height: 0;
+  }
+}
+
+// 水波纹
+.ripple:after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, #666 10%, transparent 10.01%);
+  background-repeat: no-repeat;
+  background-position: 50%;
+  transform: scale(10, 10);
+  opacity: 0;
+  transition: transform .3s, opacity .5s;
+}
+
+.ripple:active:after {
+  transform: scale(0, 0);
+  opacity: .3;
+  transition: 0s;
+}
+
+//main-container全局样式
+.app-main{
+  min-height: 100%;
+  margin: 3px;
+  margin-top: -1px;
+  padding: 0 3px;
+}
+
+.app-container {
+  padding: 20px;
+}
+
+// query全局样式
+.query-container {
+  line-height: 36px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  .query-bar {
+    margin: 0 10px;
+    > label {
+      font-weight: 100;
+      font-size: 14px;
+      float: left;
+    }
+    > .el-input {
+      float: left;
+      width: $inputWidth;
+    }
+    > .el-select {
+      float: left;
+      width: $inputWidth;
+    }
+    > .el-date-editor--datetime {
+      width: 170px;
+    }
+    > .btn {
+      margin-top: 4px;
+      margin-bottom: 5px; 
+    }
+  }
+}
+
+.WH {
+  width: 100%;
+  height: 100%;
+}
+
+// 全局分页样式
+.page-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.w220 {
+  width: 200px;
+}
+
+.w100-220 {
+  width: calc(100% - 200px);
+  padding-left: 10px;
+}
+
+.lf {
+  float: left;
+}
+
+.rt {
+  float: right;
+}
+
+.tree-tooltip {
+  border-color: #606266 !important;
+  color: #606266;
+}
+
+.claer {
+  clear: both;
+}
+
+.rmv {
+  position: absolute;
+  top: -9990px;
+  left: -9999px;
+}
+
+.mnWidth {
+  width: 180px !important;
+}
+
+// 去掉百度地图图标
+.BMap_cpyCtrl {
+  display: none;
+}
+
+// 去除百度地图版权
+.anchorBL {
+  display: none;
+}
+
+// 去掉谷歌记住密码默认的颜色
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px white inset;
+  border: 1px solid #CCC !important;
+}
+
+// 进度条样式
+#nprogress .bar {
+  background: yellow !important; //自定义颜色
+  height: 3px !important;
+  z-index: 9999 !important;
+}
+
+// el-tabs 解决内容自动根据父亲撑满
+.custom-tabs {
+  display: flex;
+  flex-direction: column;
+  .el-tabs__content {
+    flex-grow: 1;
+    padding: 3px;
+    position: relative;
+    .el-tab-pane {
+      position: absolute;
+      width: calc(100% - 6px);
+      height: calc(100% - 6px);
+    }
+  }
+}

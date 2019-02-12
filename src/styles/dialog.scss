@@ -1,0 +1,39 @@
+
+.el-dialog {
+  margin-top: 10vh !important;
+  .el-dialog__header {
+    position: relative;
+    z-index: 1000;
+    text-align: left;
+    background: #F8F8F8;
+    box-shadow: 0 2px 3px -1px rgba(0,0,0,0.3);
+    .el-dialog__title {
+      color: #333;
+      font-size: 18px;
+    }
+  }
+  .el-dialog__body {
+    height: 70vh;
+    overflow: auto;
+  }
+  .el-form {
+    > .el-form-item {
+      margin-bottom: 10px;
+      > .el-form-item__content {
+        position: relative;
+        > .el-input, > .el-select {
+          width: $formInputWidth;
+        }
+        > .el-form-item__error {
+          top: 30%;
+          left: $formInputWidth + 10;
+        }
+      }
+    }
+  }
+  .el-dialog__footer {
+    position: relative;
+    z-index: 1000;
+    box-shadow: 0 -2px 3px -1px rgba(0,0,0,0.3);
+  }
+}
