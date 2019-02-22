@@ -53,13 +53,13 @@
               :label="item.title"
               :formatter="formatter"
               :min-width="item.width">
-              <template slot="header">
+              <template slot="header" slot-scope="scope">
                 <el-switch v-if="item.field === 'index' && ![1, 2, 9, 10].includes(queryValue.statisType)"
                   v-model="switchTab"
                   class="switch-tab"
                   inactive-color="#ff4949">
                 </el-switch>
-                <span v-html="item.title"></span>
+                <span :keys="scope" v-html="item.title"></span>
               </template>
               <template v-if="Array.isArray(item.children)">
                 <el-table-column v-for="(child, child_index) in item.children"
@@ -131,7 +131,23 @@ import resizeMixin from '@/mixins/resize'
 import chart from './mixin/chart'
 import page from '@/mixins/page'
 import tableScrollHeight from '@/mixins/tableScrollHeight'
-import { parseTime, getCountDays, comSerial, downFile, computedWidth, tableHeadTab, setTableHeadBr } from '@/utils'
+import { parseTime, getCountDays, comSerial, downFile, computedWidth, tableHeadTab, setTableHeadBr, getType, cached } from '@/utils'
+
+// 格式化列表的超标和数据状态
+function formatExcessAndState (retFlag, flag) {
+  const obj = {}
+  retFlag.split(',').forEach(e => {
+    const [name, excess] = e.split('_')
+    obj[name] = { excess }
+  })
+  flag.split(',').forEach(e => {
+    const [ name, state ] = e.split('_')
+    let old = obj[name] || {}
+    obj[name] = { ...old, state }
+  })
+  return obj
+}
+
 export default {
   name: 'DataQuery',
   components: { Point, customTime },
@@ -407,6 +423,7 @@ export default {
       }
       return res
     },
+    cachedFormat: cached(formatExcessAndState),
     // 查询表数据
     async queryData (api, params) {
       let res = null
@@ -419,13 +436,14 @@ export default {
             for (const key in e) {
               let obj = e[key]
               if (key !== 'retFlag' && key !== 'flag' && key.indexOf('_') >= 0) {
-                const w = retFlag.indexOf(key.split('_')[1])
-                if (w >= 0) {
-                  let mark = retFlag.substr(w, retFlag.length).split(',')[0].split('_')[1]
-                  if (flag.indexOf(key.split('_')[1]) >= 0) {
+                const match = this.cachedFormat(retFlag, flag)
+                const matchKey = match[key.split('_')[1]]
+                if (matchKey) {
+                  const { excess, state } = matchKey
+                  if (state >= 0) {
                     obj = `${obj}(T)`
-                  } else if (mark !== 'N' && mark !== 'T' && mark) {
-                    obj = `${obj}(${mark})`
+                  } else if (excess !== 'N' && excess !== 'T' && excess) {
+                    obj = `${obj}(${excess})`
                   }
                 }
                 e[key.toLowerCase()] = obj
@@ -488,7 +506,7 @@ export default {
       }
       return res
     },
-    // 查询图标的日报表和月报表
+    // 查询图表的日报表和月报表
     queryCharDayAndMonth () {
       // this.chart.data.columns
       const columns = this.tableTitle.map(e => e.title.replace(/\(.*\)/, ''))
@@ -661,7 +679,7 @@ export default {
         let state = this.statisTypeArr.find(e => e.value === this.queryValue.statisType)
         try {
           let res = await this.$api[api](params)
-          if (typeof res === 'object') {
+          if (getType(res) === 'Blob') {
             downFile(res, `数据查询-${state.label}${new Date().getTime()}.xls`)
           } else {
             this.$message.error('导出失败')
@@ -694,7 +712,7 @@ export default {
       let state = this.statisTypeArr.find(e => e.value === this.queryValue.statisType)
       try {
         const res = await this.$api.busHisDataExport(params)
-        if (typeof res === 'object') {
+        if (getType(res) === 'Blob') {
           downFile(res, `数据查询-${state.label}-${row.previewText}-${new Date().getTime()}.xls`)
         } else {
           this.$message.error('导出失败')
@@ -710,9 +728,11 @@ export default {
     setColor ({ column, row }) {
       try {
         let { property } = column
-        let { flag } = row
+        let { retFlag = '', flag = '' } = row
+        const match = this.cachedFormat(retFlag, flag)
+        const { state } = match[property.split('_')[1]]
         // flag = flag.split(',')
-        return flag.indexOf(property.split('_')[1]) >= 0 ? { 'color': 'red' } : {}
+        return state >= 0 ? { 'color': 'red' } : {}
       } catch (error) {
         return {}
       }

@@ -56,7 +56,7 @@ export default {
         series: {
           name: '行业类型',
           type: 'pie',
-          radius: [0, '67%'],
+          radius: [0, '60%'],
           label: {
             formatter: '{b}{c}({d}%)',
             color: '#000',
@@ -64,6 +64,9 @@ export default {
           },
           labelLine: {
             show: true,
+            length: 5,
+            length2: 5,
+            // smooth: 1,
             lineStyle: {
               color: '#000',
               width: 2

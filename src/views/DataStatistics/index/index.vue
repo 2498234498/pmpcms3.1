@@ -6,17 +6,19 @@
       ref="queryContainer"
       onselectstart="return false">
       <query-bar label="时间：">
-        <el-date-picker v-model="params.time"
+        <el-date-picker v-model="params.dataTime"
           :type="dateType"
           size="mini"
           class="w120"
+          value-format="yyyy/MM/dd"
           placeholder="选择时间">
         </el-date-picker>
       </query-bar>
       <query-bar label="类型：">
-        <el-select v-model="params.type"
+        <el-select v-model="params.poiType"
           size="mini"
           class="w80"
+          @change="query(params)"
           placeholder="选择类型">
           <el-option v-for="(item, index) in $store.state.codeData.st"
             :key="index"
@@ -29,19 +31,19 @@
           expand-trigger="hover"
           :options="city"
           :props="cascaderProps"
-          change-on-select
+          @change="query(params)"
           clearable
           size="mini"
-          v-model="params.address" />
+          v-model="params.areaId" />
       </query-bar>
       <query-bar label="企业：">
-        <el-input v-model="params.enterprise" size="mini" placeholder="输入企业名称"></el-input>
+        <el-input v-model="params.comName" @keyup.enter.native="query(params)" size="mini" placeholder="输入企业名称"></el-input>
       </query-bar>
       <query-bar label="监控点：">
-        <el-input v-model.trim="params.pointName" size="mini" placeholder="输入监控点名称"></el-input>
+        <el-input v-model.trim="params.poiName" @keyup.enter.native="query(params)" size="mini" placeholder="输入监控点名称"></el-input>
       </query-bar>
       <query-bar label="MN号：">
-        <el-input v-model.trim="params.mn" size="mini" placeholder="输入MN号"></el-input>
+        <el-input v-model.trim="params.poiNum" @keyup.enter.native="query(params)" size="mini" placeholder="输入MN号"></el-input>
       </query-bar>
       <query-bar>
         <base-btn type="search"
@@ -49,6 +51,7 @@
           @click="query(params)" />
         <base-btn type="export"
           class="btn"
+          @click="exportTableDay"
           :loading="exportLoading"
           v-show="tabs !== '1'" />
       </query-bar>
@@ -58,10 +61,10 @@
       :style="{ height: `${mixinHeight - 6}px` }"
       v-model="tabs">
       <el-tab-pane label="日">
-        <day :loadingProp.sync="dataList[0].loading" :data="dataList[0].data" :params="params" @query="query" ref="day"></day>
+        <day :loadingProp.sync="dataList[0].loading" :data="dataList[0].data" :params="dataList[0].params" @query="query" ref="day"></day>
       </el-tab-pane>
       <el-tab-pane label="月">
-        <month :loadingProp.sync="dataList[0].loading" :data="dataList[0].data" :params="params" @query="query" ref="month"></month>
+        <month :loadingProp.sync="dataList[1].loading" :data="dataList[1].data" :params="dataList[1].params" @query="query" ref="month"></month>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -71,7 +74,7 @@
 import resizeMixin from '@/mixins/resize'
 import city from '@/utils/city'
 import components from './components'
-import { getDate } from '@/utils'
+import { getDate, getType, downFile } from '@/utils'
 export default {
   name: 'DataIntegrity',
   mixins: [resizeMixin],
@@ -79,12 +82,12 @@ export default {
   data () {
     return {
       params: {
-        time: new Date(getDate({timestamp: new Date().getTime() - 24 * 60 * 60 * 1000})),
-        type: '',
-        address: [],
-        enterprise: '',
-        pointName: '',
-        mn: ''
+        dataTime: getDate({ timestamp: new Date().getTime() - 24 * 60 * 60 * 1000, format: 'yyyy/MM/dd' }),
+        poiType: '',
+        areaId: [],
+        comName: '',
+        poiName: '',
+        poiNum: ''
       },
       tabs: '0',
       cascaderProps: {
@@ -94,14 +97,13 @@ export default {
       city: Object.freeze(city),
       exportLoading: false,
       dataList: [
-        { loading: false, isFirst: true, data: [] },
-        { loading: false, isFirst: true, data: [] }
+        { loading: false, isFirst: true, data: [], api: 'statisDataCompDayList', errMsg: '日列表查询失败', params: {} },
+        { loading: false, isFirst: true, data: [], api: 'statisDataCompMonthList', errMsg: '月列表查询失败', params: {} }
       ]
     }
   },
-  created () {
-    // TODO
-    // this.query(this.params)
+  mounted () {
+    this.query(this.params)
   },
   watch: {
     tabs () {
@@ -128,13 +130,19 @@ export default {
     }
   },
   methods: {
-    query (params) {
+    async query (params) {
+      if (!this.params.dataTime) {
+        this.$message.error('请选择时间')
+        return
+      }
       const tabsData = this.tabsData()
       const ckData = this.dataList[this.tabs]
       ckData.loading = true
       ckData.isFirst = false
       if (params) {
-        this.query.$params = params
+        this.query.$params = { ...params }
+        this.query.$params.areaId = this.query.$params.areaId.length ? this.query.$params.areaId[this.query.$params.areaId.length - 1] : ''
+        ckData.params = this.query.$params
         if (tabsData) tabsData.current = 1
       }
       let rParams = {}
@@ -144,11 +152,61 @@ export default {
       } else {
         rParams = { ...this.query.$params, size: 1, current: 10 }
       }
-      console.log(rParams)
-      // TODO
-      setTimeout(() => {
+      if (this.tabs === '1') {
+        delete rParams.dataTime
+      }
+
+      try {
+        const res = await this.$api[ckData.api](rParams)
+        if (res.state === 0) {
+          if (this.tabs === '1') {
+            const pre = { loading: false, children: [], expandLoading: false }
+            ckData.data = res.data.records.map(e => {
+              return {
+                ...e,
+                ...pre
+              }
+            })
+          } else {
+            ckData.data = res.data.records
+          }
+          tabsData.total = res.data.total
+        } else {
+          this.$message.errro(ckData.errMsg)
+        }
         ckData.loading = false
-      }, 1000)
+      } catch (err) {
+        this.$isRepeat(err, () => {
+          ckData.loading = false
+        })
+      }
+    },
+    // 导出日数据
+    async exportTableDay () {
+      if (!this.params.dataTime) {
+        this.$message.error('请选择时间')
+        return
+      }
+      this.exportLoading = true
+      let params = { ...this.params }
+      let { areaId } = params
+      areaId = areaId.length ? areaId[areaId.length - 1] : ''
+      params.areaId = areaId
+
+      this.$message(`正在导出报表...`)
+
+      try {
+        const res = await this.$api.statisDataComExport(params)
+        if (getType(res) === 'Blob') {
+          downFile(res, `数据完整率-日数据-${new Date().getTime()}.xls`)
+          this.$message.success('导出成功')
+        } else {
+          this.$message.error('导出失败')
+        }
+      } catch (err) {
+        console.log(err)
+      }
+      this.exportLoading = false
     }
   }
 }

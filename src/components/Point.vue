@@ -99,6 +99,11 @@ export default {
       handler (val) {
         let { id } = val.query
         if (id) {
+          const match = findTreeData(this.$store.getters.pointData, id)
+          if (this.$store.getters.pointData.length && !match) {
+            this.$message.error('找不到该监控点')
+            return
+          }
           if (this.$store.getters.pointData.length) {
             this.$store.commit('SET_POINT_CHECK', findTreeData(this.$store.getters.pointData, id))
           } else {
@@ -151,7 +156,7 @@ export default {
           const { scroll: $scroll, tree: $tree } = this.$refs
           const $curNode = $tree.treeItemArray.find(e => e.classList.contains('is-current'))
           if ($curNode) {
-            this.animateScroll($curNode, $scroll.$refs.wrap, 200)
+            this.animateScroll($curNode, $scroll.$refs.wrap, 90)
           }
         } catch (err) {
           console.log(err)

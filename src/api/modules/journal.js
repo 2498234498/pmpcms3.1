@@ -1,7 +1,7 @@
 /**
  * 日志查询
  */
-import { getRequest, getExcelRequest } from '../config'
+import { getRequest, getExcelRequest, postRequest } from '../config'
 
 // 操作日志-查询
 function sysOperateLogListJson (params) {
@@ -90,6 +90,14 @@ function busReversecontrolResultSelectByQn (qn) {
   )
 }
 
+// 短信日志列表
+function sysSmsLogList (params) {
+  return postRequest(
+    '/sysSmsLog/query',
+    params
+  )
+}
+
 export default {
   sysOperateLogListJson,
   sysOperateLogType,
@@ -101,5 +109,7 @@ export default {
   busDataPacketExport,
   busReversecontrolLogListJson,
   busReversecontrolLogExport,
-  busReversecontrolResultSelectByQn
+  busReversecontrolResultSelectByQn,
+  // 短信日志
+  sysSmsLogList
 }

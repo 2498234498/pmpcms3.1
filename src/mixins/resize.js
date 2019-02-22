@@ -4,6 +4,7 @@ const minxinsResize = {
     return {
       mixinHeight: '0',
       mixinShowAfterRenderClass: false,
+      mixinResizeTime: null,
       handleScrollX: null
     }
   },
@@ -18,14 +19,18 @@ const minxinsResize = {
   },
   methods: {
     mixinResize () {
-      this.$nextTick(() => {
+      // 防止一段时间内触发多次
+      clearTimeout(this.mixinResizeTime)
+      this.mixinResizeTime = setTimeout(async () => {
+        await this.$nextTick()
         this.mixinHeight = this.$refs.container.offsetHeight - (this.$refs.queryContainer.offsetHeight || (
           // 针对形式是组件的
           this.$refs.queryContainer.$el ? this.$refs.queryContainer.$el.offsetHeight || 0 : 0
         ))
-      })
+      }, 100)
     },
     mixinUpdatedTableHeight () {
+      if (this.handleScrollX) return
       /**
        * 用于隐藏固定高度时显示不必要的scrollX的定时器
        * 这是el-table初次渲染时宽度计算的bug，可在渲染后通过重新赋予overflow: auto调整
@@ -42,6 +47,7 @@ const minxinsResize = {
   },
   destroyed () {
     this.handleScrollX && clearInterval(this.handleScrollX)
+    this.mixinResizeTime && clearTimeout(this.mixinResizeTime)
   }
 }
 export default minxinsResize

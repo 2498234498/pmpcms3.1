@@ -89,10 +89,12 @@ export default {
     ceilvalAndFloorval (floorval, ceilval) {
       if (floorval === null && ceilval === null) {
         return '-'
-      } else if (floorval !== null) {
+      } else if (floorval !== null && ceilval === null) {
         return `> ${floorval}`
-      } else {
+      } else if (ceilval !== null && floorval === null) {
         return `< ${ceilval}`
+      } else {
+        return `${floorval} - ${ceilval}`
       }
     },
     submit () {

@@ -13,29 +13,47 @@
           change-on-select
           clearable
           size="mini"
-          v-model="params.address" />
+          v-model="params.areaId" />
       </query-bar>
       <query-bar label="企业：">
-        <el-input v-model="params.enterprise"
+        <el-input v-model="params.comName"
           size="mini"
+          @keyup.enter.native="query(params)"
           placeholder="输入企业名称"></el-input>
       </query-bar>
       <query-bar label="监控点：">
-        <el-input v-model.trim="params.pointName"
+        <el-input v-model.trim="params.poiName"
           size="mini"
+          @keyup.enter.native="query(params)"
           placeholder="输入监控点名称"></el-input>
       </query-bar>
       <query-bar label="MN号：">
         <el-input v-model.trim="params.mn"
           size="mini"
+          @keyup.enter.native="query(params)"
           placeholder="输入MN号"></el-input>
       </query-bar>
       <query-bar>
         <base-btn type="search"
+          @click="query(params)"
           class="btn" />
         <base-btn type="add"
           @click="add"
           class="btn" />
+        <base-btn type="sms"
+          @click="smsFormShow = true"
+          class="btn" />
+      </query-bar>
+      <query-bar label="" title="短信总开关">
+        <el-switch
+          style="height: 100%;"
+          v-model="totalSwitch"
+          @change="totalSwitchChange"
+          :active-value="1"
+          active-text="开启"
+          :inactive-value="0"
+          inactive-text="关闭">
+        </el-switch>
       </query-bar>
     </div>
     <el-table :data="tableData"
@@ -57,24 +75,27 @@
         align="center">
         <template slot-scope="scope">
           <el-row v-if="item.type === 'btn'">
-            <base-btn type="edit"></base-btn>
-            <base-btn type="del"></base-btn>
+            <base-btn type="editUp" @click="edit(scope.row)"></base-btn>
+            <base-btn type="deleteUp" @click="del(scope.row)"></base-btn>
           </el-row>
           <el-row v-else-if="item.type === 'switch'">
             <el-switch
-              v-model="scope.row.status"
+              v-model="scope.row.inUse"
+              @change="switchChange(scope.row)"
               class="switch-tab"
-              active-text="关闭"
-              inactive-text="开启">
+              :active-value="1"
+              active-text="开启"
+              :inactive-value="0"
+              inactive-text="关闭">
             </el-switch>
           </el-row>
-          <span v-else>{{ formatter(scope.row, item.property, scope.row[item.property], scope.$index) }}</span>
+          <span v-else>{{ formatter(scope.row, item.field, scope.row[item.field], scope.$index) }}</span>
         </template>
       </el-table-column>
     </el-table>
     <el-pagination class="page-container"
-      @size-change="current = 1, handleTableScrollHeight('table')"
-      @current-change="handleTableScrollHeight('table')"
+      @size-change="current = 1, query(), handleTableScrollHeight('table')"
+      @current-change="query(), handleTableScrollHeight('table')"
       background
       :current-page.sync="current"
       :page-sizes="sizes"
@@ -82,21 +103,24 @@
       layout="total, sizes, prev, pager, next, jumper"
       :total="total">
     </el-pagination>
-    <ae-form :show.sync="aeForm.show" :model="aeForm.model" :title="aeForm.title"></ae-form>
+    <ae-form :show.sync="aeForm.show" :model="aeForm.model" :title="aeForm.title" :data="aeForm.data" @submit="query"></ae-form>
+    <sms-form :show.sync="smsFormShow"></sms-form>
   </div>
 </template>
 
 <script>
-import { comSerial } from '@/utils'
+import { comSerial, cached, flatChildrenId, deleteAfterCurrent } from '@/utils'
 import city from '@/utils/city'
 import resizeMixin from '@/mixins/resize'
 import page from '@/mixins/page'
 import tableScrollHeight from '@/mixins/tableScrollHeight'
-import AeForm from './components/AeForm'
 export default {
   name: 'SmsConfig',
   mixins: [resizeMixin, page, tableScrollHeight],
-  components: { AeForm },
+  components: {
+    AeForm: resolve => require(['./components/AeForm'], resolve),
+    smsForm: resolve => require(['./components/smsForm'], resolve)
+  },
   data () {
     return {
       city: Object.freeze(city),
@@ -104,30 +128,127 @@ export default {
         value: 'id',
         label: 'text'
       },
+      totalSwitch: 1,
       params: {
-        address: [],
-        enterprise: '',
-        pointName: '',
+        areaId: [],
+        comName: '',
+        poiName: '',
         mn: ''
       },
       tableHead: [
         { field: 'index', title: '序号', width: 50, fixed: 'left' },
-        { field: 'index', title: '省市区', width: 150 },
-        { field: 'index', title: '企业', width: 120 },
-        { field: 'index', title: '监控点名称', width: 120 },
-        { field: 'index', title: 'Mn号', width: 120 },
-        { field: 'index', title: '状态', width: 100, fixed: 'right', type: 'switch' },
-        { type: 'btn', title: '操作', width: 120, fixed: 'right' }
+        { field: 'areaId', title: '省市区', width: 150 },
+        { field: 'comName', title: '企业', width: 140 },
+        { field: 'poiName', title: '监控点名称', width: 140 },
+        { field: 'mn', title: 'Mn号', width: 120 },
+        { field: 'inUse', title: '状态', width: 140, fixed: 'right', type: 'switch' },
+        { type: 'btn', title: '操作', width: 140, fixed: 'right' }
       ],
       tableData: [],
       aeForm: {
         show: false,
         model: 'add',
-        title: '添加短信配置'
-      }
+        title: '添加短信配置',
+        data: {}
+      },
+      smsFormShow: false
     }
   },
+  created () {
+    // TODO
+    this.query(this.params)
+    this.queryTotalSwitch()
+  },
+  activated () {
+    this.queryTotalSwitch()
+  },
   methods: {
+    async query (params) {
+      this.loading = true
+      let _query = this.query
+      if (params) {
+        this.current = 1
+        _query.$params = { ...(_query.$params || {}), ...params }
+        const { $params: { areaId } } = _query
+        _query.$params.areaId = areaId.length ? areaId.slice(-1) + '' : ''
+      }
+      _query.$params = {
+        ...(_query.$params || {}),
+        current: this.current,
+        size: this.size
+      }
+
+      try {
+        const res = await this.$api.sysSmsList(_query.$params)
+        if (res.state === 0) {
+          this.tableData = (res.data.list || [])
+          this.total = res.data.total
+        } else {
+          this.$message.error('列表查询失败')
+        }
+        this.loading = false
+      } catch (err) {
+        this.$isRepeat(err, () => {
+          this.loading = false
+        })
+      }
+    },
+    // 查询短信全局开关
+    async queryTotalSwitch () {
+      try {
+        const res = await this.$api.sysSmsGetGloSwitch()
+        if (res.state === 0) {
+          this.totalSwitch = res.data
+        } else {
+          this.$message.error('短信全局开关查询失败')
+        }
+      } catch (err) {
+        console.log(err)
+      }
+    },
+    // 设置短信全局开关
+    async setTotalSwitch (smsGlobalSwitch) {
+      try {
+        const res = await this.$api.sysSmsSetGloSwitch({ smsGlobalSwitch })
+        if (res.state === 0) {
+          return true
+        }
+      } catch (err) {
+        return false
+      }
+    },
+    totalSwitchChange (data) {
+      let state = null
+      this.$confirm(`确定${data ? '开启' : '关闭'}全局短信？`, '全局短信总开关', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        beforeClose: async (action, instance, done) => {
+          if (action === 'confirm') {
+            instance.confirmButtonLoading = true
+            instance.confirmButtonText = '执行中...'
+            // TODO
+            state = await this.setTotalSwitch(data)
+            if (!state) {
+              this.totalSwitch = +(!data)
+            }
+            done()
+            instance.confirmButtonLoading = false
+          } else {
+            this.totalSwitch = +(!data)
+            done()
+          }
+        }
+      }).then(() => {
+        this.$message({
+          type: `${state ? 'success' : 'error'}`,
+          message: `${data ? '开启' : '关闭'}${state ? '成功' : '失败'}!`
+        })
+      }).catch(() => {
+        this.$message('取消设置')
+      })
+    },
+    cachedAddr: cached(flatChildrenId),
     add () {
       this.aeForm = {
         show: true,
@@ -135,11 +256,63 @@ export default {
         title: '添加短信配置'
       }
     },
+    edit (data) {
+      data = { ...data }
+      this.aeForm = {
+        show: true,
+        model: 'edit',
+        title: `添加短信配置 - ${data.poiName}`,
+        data
+      }
+    },
+    async del ({ poiId, poiName }) {
+      await this.$prompt(`确认删除${poiName}监控点的短信配置`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      this.loading = true
+      try {
+        const res = await this.$api.sysSmsDelete({ poiId })
+        if (res.state === 0) {
+          this.$message.success('删除成功')
+          this.current = deleteAfterCurrent(this.current, this.size, this.total)
+          this.query()
+        } else {
+          this.$message.error('删除失败')
+        }
+      } catch (err) {
+        console.log(err)
+      }
+      this.loading = false
+    },
+    // 列表单条开关
+    async switchChange (data) {
+      this.loading = true
+      const { poiId, inUse, poiName } = data
+      try {
+        const res = await this.$api.sysSmsChangeInUse({ poiId, inUse })
+        if (res.state === 0) {
+          this.$message.success(`${poiName}监控点状态修改为${inUse ? '开启' : '关闭'}`)
+        } else {
+          this.$message.error(`${poiName}监控点状态修改失败`)
+          data.inUse = +!data.inUse
+        }
+      } catch (err) {
+        console.log(err)
+        data.inUse = +!data.inUse
+      }
+      this.loading = false
+    },
     formatter (row, property, cellValue, index) {
       let value = ''
       switch (property) {
         case 'index':
           value = comSerial(this.current, this.size, index)
+          break
+        case 'areaId':
+          // cachedAddr
+          value = this.cachedAddr(this.city, cellValue, 'text').join('')
           break
       }
       return value || cellValue

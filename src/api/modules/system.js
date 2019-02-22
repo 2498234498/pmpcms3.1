@@ -343,6 +343,101 @@ function insertPointInfoCode (params) {
     params
   )
 }
+
+// 字典表查询
+function sysDictionaryQuery (params) {
+  return getRequest(
+    'sysDictionary/selectAllDictionary',
+    params
+  )
+}
+
+// 添加字典表
+function sysDictionaryAdd (params) {
+  return getRequest(
+    'sysDictionary/insertDictionary',
+    params
+  )
+}
+
+// 修改字典表
+function sysDictionaryUpdate (params) {
+  return getRequest(
+    'sysDictionary/updateDictionary',
+    params
+  )
+}
+
+// 删除字典表
+function sysDictionaryDelete (ids) {
+  return getRequest(
+    'sysDictionary/delete',
+    ids
+  )
+}
+
+// 获取短信全局开关
+function sysSmsGetGloSwitch () {
+  return postRequest(
+    '35/sysSmsConfig/getSmsGlobalSwitch'
+  )
+}
+
+// 设置短信全局开关
+function sysSmsSetGloSwitch (params) {
+  return postRequest(
+    '35/sysSmsConfig/setSmsGlobalSwitch',
+    params
+  )
+}
+
+// 获取中国网建短信账号
+function sysSmsGetSmsAccount () {
+  return postRequest(
+    '35/sysSmsConfig/getSmsPlatformAccountSecretkey'
+  )
+}
+
+// 设置中国网建短信账号
+function sysSmsSetSmsAccount (params) {
+  return postRequest(
+    '35/sysSmsConfig/setSmsPlatformAccountSecretkey',
+    params
+  )
+}
+
+// 添加或修改短信配置
+function sysSmsAddOrUpdate (params) {
+  return postRequest(
+    '/sysSmsConfig/addOrUpdate',
+    params
+  )
+}
+
+// 短信配置列表
+function sysSmsList (params) {
+  return postRequest(
+    '/sysSmsConfig/query',
+    params
+  )
+}
+
+// 删除短信配置
+function sysSmsDelete (params) {
+  return postRequest(
+    '/sysSmsConfig/delete',
+    params
+  )
+}
+
+// 开启或关闭单条短信配置
+function sysSmsChangeInUse (params) {
+  return postRequest(
+    '/sysSmsConfig/changeInUse',
+    params
+  )
+}
+
 export default {
   // 企业管理
   getSysCompany,
@@ -393,5 +488,19 @@ export default {
   // 查询版本信息
   queryVersionMess,
   // 监控点
-  insertPointInfoCode
+  insertPointInfoCode,
+  // 字典表管理
+  sysDictionaryQuery,
+  sysDictionaryAdd,
+  sysDictionaryUpdate,
+  sysDictionaryDelete,
+  // 短信配置
+  sysSmsGetGloSwitch,
+  sysSmsSetGloSwitch,
+  sysSmsGetSmsAccount,
+  sysSmsSetSmsAccount,
+  sysSmsAddOrUpdate,
+  sysSmsList,
+  sysSmsDelete,
+  sysSmsChangeInUse
 }

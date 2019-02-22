@@ -86,6 +86,7 @@ export default {
   },
   methods: {
     change (time) {
+      console.log(time)
       if (!(this.contrastValue && typeof this.contrastValue === 'object') || !time) return false
       if ([9, 10].includes(this.type)) {
         if (this.type === 9) {
@@ -110,13 +111,15 @@ export default {
       } else {
         // 如果开始时间大于结束时间，则把开始时间的值赋给结束时间
         if (this.only === 'begin') {
-          if (time.getTime() > this.contrastValue.getTime()) {
-            this.$emit('update:contrastValue', time)
+          const startYMD = parseTime(time, '{y}-{m}-{d}')
+          const endYMD = parseTime(this.contrastValue, '{y}-{m}-{d}')
+          if (time.getTime() > this.contrastValue.getTime() || ([1, 2, 9].includes(this.type) && startYMD !== endYMD)) { // 实时数据、超标数据，开始时间改变，结束时间如果不是同一天就得跟着改变
+            this.$emit('update:contrastValue', new Date(`${parseTime(time, '{y}-{m}-{d}')} 23:59:59`))
           }
         } else {
           // 如果结束时间小于开始时间，则把结束时间的值赋给开始时间
           if (time.getTime() < this.contrastValue.getTime()) {
-            this.$emit('update:contrastValue', time)
+            this.$emit('update:contrastValue', new Date(`${parseTime(time, '{y}-{m}-{d}')} 00:00:00`))
           }
         }
       }

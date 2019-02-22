@@ -189,6 +189,12 @@ export const presetRouter = [
         name: 'UserJournal',
         component: () => import('@/views/Journal/UserJournal'),
         meta: { title: '用户操作日志', isLogin: true, id: 'M070200', children: [{ id: 'M070201', bId: 'B10005' }, { id: 'M070202', bId: 'B10003' }] }
+      },
+      {
+        path: 'smsLog',
+        name: 'SmsLog',
+        component: () => import('@/views/Journal/SmsLog'),
+        meta: { title: '短信日志', isLogin: true, id: 'all' }
       }
     ]
   },
@@ -229,7 +235,7 @@ export const presetRouter = [
         path: 'pointManagement',
         name: 'PointManagement',
         component: () => import('@/views/System/PointManagement'),
-        meta: { title: '监控点配置管理', isLogin: true, id: 'M060500', children: [{ id: 'M060502', bId: 'B10001' }, { id: 'M060503', bId: 'B10002' }, { id: 'M060504', bId: 'B10004' }, { id: 'M060508', bId: 'B10005' }, { id: 'M060510', bId: 'B10007' }, { id: 'M060508', bId: 'B10003' }] }
+        meta: { title: '监控点配置管理', isLogin: true, id: 'M060500', children: [{ id: 'M060502', bId: 'B10001' }, { id: 'M060503', bId: 'B10002' }, { id: 'M060504', bId: 'B10004' }, { id: 'M060508', bId: 'B10005' }, { id: 'M060510', bId: 'B10007' }, { id: 'M060508', bId: 'B10003' }, { id: 'M060510', bId: 'B10016' }] }
       },
       {
         path: 'contaminantsManagement',
@@ -241,7 +247,7 @@ export const presetRouter = [
         path: 'dictionaryTable',
         name: 'DictionaryTable',
         component: () => import('@/views/System/DictionaryTable'),
-        meta: { title: '字典表管理', isLogin: true, id: 'all' }
+        meta: { title: '字典表管理', isLogin: true, id: 'M060900' }
       },
       {
         path: 'smsConfig',

@@ -48,7 +48,7 @@ const map = {
     // 地图初始化
     afterSet () {
       this.bmap = this.$refs.bmap.echarts.getModel().getComponent('bmap').getBMap()
-      this.bmap.addControl(new window.BMap.NavigationControl())
+      this.bmap.addControl(new window.BMap.NavigationControl({ anchor: window.BMAP_ANCHOR_TOP_RIGHT }))
       this.marker = []
       this.mapData.forEach(ele => {
         this.addOverlay(ele)

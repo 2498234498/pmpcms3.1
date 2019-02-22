@@ -103,7 +103,12 @@
       <el-form :model="form.values"
         :rules="form.rules"
         status-icon
+        style="margin-top: -60px;"
         ref="form">
+        <el-form-item>
+          <el-input type="text" style="opacity: 0;"></el-input>
+          <el-input type="password" style="opacity: 0;"></el-input>
+        </el-form-item>
         <el-form-item v-for="(item, index) in form.inputs"
           :key="index"
           :label="item.label"
@@ -160,7 +165,7 @@
 </template>
 
 <script>
-import { comSerial, parseTime, downFile, deleteAfterCurrent } from '@/utils'
+import { comSerial, parseTime, downFile, deleteAfterCurrent, getType } from '@/utils'
 import { validateText, validatePhone, validateEmail } from '@/utils/validate'
 import md5 from 'md5'
 import resizeMixin from '@/mixins/resize'
@@ -569,7 +574,7 @@ export default {
       this.exportLoading = true
       try {
         let res = await this.$api.sysUserExpor(params)
-        if (typeof res === 'object') {
+        if (getType(res) === 'Blob') {
           downFile(res, `用户管理报表${new Date().getTime()}.xls`)
         } else {
           this.$message.error('导出失败')

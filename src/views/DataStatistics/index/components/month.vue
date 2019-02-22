@@ -17,30 +17,33 @@
         :min-width="item.width"
         :prop="item.field"
         :fixed="item.fixed"
-        :type="item.type || ''"
+        :type="item.type"
         align="center">
-        <template slot-scope="scope">
+        <template slot-scope="{ row, row: { loading = false, expandLoading = false, children = [] }, $index }">
           <el-row v-if="item.type === 'btn'">
             <base-btn type="export"
-              :loading="scope.row.loading"
-              @click="exportTable(scope.row)"></base-btn>
+              :loading="loading"
+              @click="exportTable(row)"></base-btn>
           </el-row>
-          <el-table :data="item.children"
+          <el-table :data="children"
             v-else-if="item.type === 'expand'"
             border
             highlight-current-row
-            ref="table"
-            style="width: 100%">
-            <el-table-column v-for="(item, index) in tableChildHead"
+            style="width: 100%"
+            v-loading="expandLoading"
+            element-loading-text="数据加载中"
+            element-loading-spinner="el-icon-loading"
+            :element-loading-background="$store.getters.loadingColor">
+            <el-table-column v-for="(itemChild, index) in tableChildHead"
               :key="index"
-              :label="item.title"
-              :min-width="item.width"
-              :prop="item.field"
-              :fixed="item.fixed"
+              :label="itemChild.title"
+              :min-width="itemChild.width"
+              :prop="itemChild.field"
+              :fixed="itemChild.fixed"
               :formatter="formatterChild"
               align="center">
-              <template v-if="Array.isArray(item.children)">
-                <el-table-column v-for="(child, child_index) in item.children"
+              <template v-if="Array.isArray(itemChild.children)">
+                <el-table-column v-for="(child, child_index) in itemChild.children"
                   :key="child_index"
                   align="center"
                   :prop="child.field"
@@ -52,7 +55,7 @@
             </el-table-column>
           </el-table>
           <span v-else>
-            {{ formatter(scope.row, item.property, scope.row[item.property], scope.$index) }}
+            {{ formatter(row, item.field, row[item.field], $index) }}
           </span>
         </template>
       </el-table-column>
@@ -72,47 +75,83 @@
 
 <script>
 import mInit from './mixin/init'
-import { comSerial } from '@/utils'
+import { getCountDays, getType, downFile } from '@/utils'
 export default {
   mixins: [mInit],
   data (vm) {
     return {
       tableHead: [
-        { field: 'index', title: '序号', width: 50, fixed: 'left' },
+        { field: 'index', title: '序号', width: 50 },
         { type: 'expand', width: 50 },
-        { field: 'index', title: '省市区', width: 150 },
-        { field: 'index', title: '企业', width: 100 },
-        { field: 'index', title: '监控点', width: 100 },
-        { field: 'index', title: 'MN号', width: 130 },
-        { type: 'btn', title: '操作', width: 100, fixed: 'right' }
+        { field: 'areaId', title: '省市区', width: 150 },
+        { field: 'comName', title: '企业', width: 130 },
+        { field: 'poiName', title: '监控点', width: 150 },
+        { field: 'poiNum', title: 'MN号', width: 130 },
+        { type: 'btn', title: '操作', width: 80 }
       ],
       tableChildHead: [
-        { field: 'index', title: '序号', width: 50, fixed: 'left' },
-        { field: 'index', title: '时间', width: 100 },
-        { field: 'index', title: '实时数据', width: 100, children: vm.generateTable() },
-        { field: 'index', title: '分钟数据', width: 100, children: vm.generateTable() },
-        { field: 'index', title: '小时数据', width: 100, children: vm.generateTable() },
-        { field: 'index', title: '日数据', width: 100, children: vm.generateTable() }
+        { field: 'index', title: '序号', width: 50 },
+        { field: 'dataTime', title: '时间', width: 150 },
+        { field: 'rtd', title: '实时数据', width: 100, children: vm.generateTable('rtd') },
+        { field: 'minute', title: '分钟数据', width: 100, children: vm.generateTable('minute') },
+        { field: 'hour', title: '小时数据', width: 100, children: vm.generateTable('hour') },
+        { field: 'day', title: '日数据', width: 100, children: vm.generateTable('day') }
       ]
     }
   },
   methods: {
-    query () {},
-    exportTable (row) { },
-    formatter (row, property, cellValue, index) {
-      let value = ''
-      switch (property) {
-        case 'index':
-          value = comSerial(this.current, this.size, index)
-          break
+    async query (data) {
+      data.expandLoading = true
+      const { areaId, comName, poiId, poiName, poiNum } = data
+      let { dataTime, poiType } = this.params
+      const [year, mm] = dataTime.split('/')
+      dataTime = `${year}/${mm}/01`
+      let endTime = `${year}/${mm}/${getCountDays(year, mm)}`
+
+      try {
+        const res = await this.$api.statisDataComMonthListChild({ areaId, comName, poiId, poiName, poiNum, poiType, dataTime, endTime })
+        if (res.state === 0) {
+          data.children = res.data || []
+        } else {
+          this.$message.error('子列查询失败')
+        }
+        data.expandLoading = false
+      } catch (err) {
+        this.$isRepeat(err, () => {
+          data.expandLoading = false
+        })
       }
-      return value || cellValue
+    },
+    // 月数据导出
+    async exportTable (row) {
+      row.loading = true
+      const { areaId, comName, poiId, poiName, poiNum } = row
+      let { dataTime, poiType } = this.params
+      const [year, mm] = dataTime.split('/')
+      dataTime = `${year}/${mm}/01`
+      let endTime = `${year}/${mm}/${getCountDays(year, mm)}`
+
+      this.$message(`正在导出${poiName}监控点报表...`)
+
+      try {
+        const res = await this.$api.statisDataComExport({ areaId, comName, poiId, poiName, poiNum, poiType, dataTime, endTime })
+        if (getType(res) === 'Blob') {
+          downFile(res, `数据完整率-月数据-${poiName}-${new Date().getTime()}.xls`)
+          this.$message.success(`${poiName}监控点导出成功`)
+        } else {
+          this.$message.error(`${poiName}监控点导出失败`)
+        }
+      } catch (err) {
+        console.log(err)
+      }
+
+      // TODO
+      row.loading = false
     },
     expandChange (row) {
       row.expand = !row.expand
       if (row.expand) {
-        // TODO 查询子列
-        // this.query(row)
+        this.query(row)
       }
     },
     formatterChild (row, { property }, cellValue, index) {
@@ -120,6 +159,12 @@ export default {
       switch (property) {
         case 'index':
           value = index + 1
+          break
+        case 'dayRate':
+        case 'hourRate':
+        case 'minuteRate':
+        case 'rtdRate':
+          value = (cellValue + '') ? cellValue + '%' : cellValue
           break
       }
       return value || cellValue

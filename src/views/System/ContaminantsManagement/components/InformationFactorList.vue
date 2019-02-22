@@ -148,6 +148,9 @@ export default {
       if (!this.allTableData.length) {
         this.allTableData = await this.$store.dispatch('getPolluteInfoList', this.params)
       }
+      this.allTableData.forEach(ele => {
+        ele.checkBlooean = false
+      })
       await this.query()
     }
   },

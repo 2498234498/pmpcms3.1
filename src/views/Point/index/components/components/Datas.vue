@@ -22,7 +22,7 @@
           class="switch-tab"
           inactive-color="#ff4949">
         </el-switch>
-        <span v-html="item.title"></span>
+        <span :keys="scope" v-html="item.title"></span>
       </template>
       <template v-if="Array.isArray(item.children)">
         <el-table-column v-for="(child, child_index) in item.children"
@@ -38,7 +38,16 @@
 </template>
 
 <script>
-import { tableHeadTab, setTableHeadBr } from '@/utils'
+import { tableHeadTab, setTableHeadBr, cached } from '@/utils'
+
+// 格式化列表的超标和数据状态
+function formatExcessAndState (flag) {
+  return flag.split(',').map(e => {
+    const [name, excess, state] = e.split('_')
+    return { name, excess, state }
+  })
+}
+
 export default {
   props: {
     data: {
@@ -109,14 +118,18 @@ export default {
       try {
         let { property } = column
         let { flage } = row
-        if (!(property.split('_').length >= 3 && flage && flage.indexOf('_') >= 0)) return {}
+        const flagArray = this.cachedFormat(flage)
+        const match = this.compExcessAndState(flagArray, property)
+        if (!match) return {}
 
-        const w = flage.indexOf(property.split('_')[2])
-        let mark = flage.substr(w, flage.length).split(',')[0].split('_')[1]
-        return mark === '1' ? { 'color': 'red' } : {}
+        return match.excess === '1' ? { 'color': 'red' } : {}
       } catch (error) {
         return {}
       }
+    },
+    cachedFormat: cached(formatExcessAndState),
+    compExcessAndState (array, property) {
+      return array.find(e => e.name === property.split('_')[2])
     },
     formatter (row, { property }, cellValue, index) {
       let value = ''
@@ -128,14 +141,14 @@ export default {
           if (property !== 'flage' && property.indexOf('_') >= 0 && cellValue !== undefined) {
             let { flage } = row
             if (flage) {
-              const w = flage.indexOf(property.split('_')[2])
-              if (w >= 0) {
-                let mark = flage.substr(w, flage.length).split(',')[0].split('_')[2]
-                let v = flage.substr(w, flage.length).split(',')[0].split('_')[1]
-                if (v === '1') {
+              const flagArray = this.cachedFormat(flage)
+              const match = this.compExcessAndState(flagArray, property)
+              if (match) {
+                const { excess, state } = match
+                if (excess === '1') {
                   value = `${cellValue}(T)`
-                } else if (mark !== 'N' && mark !== 'T' && mark) {
-                  value = `${cellValue}(${mark})`
+                } else if (state !== 'N' && state !== 'T' && state) {
+                  value = `${cellValue}(${state})`
                 }
               }
             }

@@ -1,5 +1,5 @@
 <template>
-  <div class="statistics" :class="show ? '' : 'not'">
+  <div class="statistics" :class="statisShow ? '' : 'not'">
     <div class="sta-bar">
       <slot name="left"></slot>
     </div>
@@ -9,7 +9,7 @@
     <div class="sta-bar">
       <slot name="right"></slot>
     </div>
-    <div class="arrow ripple" @click="show = !show" :title="show ? '点击缩放' : '点击展开'">
+    <div class="arrow ripple" @click="statisShow = !statisShow" :title="statisShow ? '点击缩放' : '点击展开'">
       <div class="container">&#62;</div>
     </div>
   </div>
@@ -17,9 +17,20 @@
 
 <script>
 export default {
-  data () {
-    return {
-      show: true
+  props: {
+    show: {
+      type: Boolean,
+      default: true
+    }
+  },
+  computed: {
+    statisShow: {
+      get () {
+        return this.show
+      },
+      set (val) {
+        this.$emit('update:show', val)
+      }
     }
   }
 }

@@ -44,35 +44,25 @@
 
 <script>
 import mInit from './mixin/init'
-import { comSerial } from '@/utils'
 export default {
   mixins: [mInit],
   data (vm) {
     return {
       tableHead: [
         { field: 'index', title: '序号', width: 50, fixed: 'left' },
-        { field: 'index', title: '时间', width: 150 },
-        { field: 'index', title: '省市区', width: 150 },
-        { field: 'index', title: '企业', width: 100 },
-        { field: 'index', title: '监控点', width: 100 },
-        { field: 'index', title: 'MN号', width: 130 },
-        { field: 'index', title: '实时数据', width: 100, children: vm.generateTable() },
-        { field: 'index', title: '分钟数据', width: 100, children: vm.generateTable() },
-        { field: 'index', title: '小时数据', width: 100, children: vm.generateTable() },
-        { field: 'index', title: '日数据', width: 100, children: vm.generateTable() }
+        { field: 'dataTime', title: '时间', width: 150 },
+        { field: 'areaId', title: '省市区', width: 150 },
+        { field: 'comName', title: '企业', width: 130 },
+        { field: 'poiName', title: '监控点', width: 150 },
+        { field: 'poiNum', title: 'MN号', width: 130 },
+        { field: 'rtd', title: '实时数据', width: 100, children: vm.generateTable('rtd') },
+        { field: 'minute', title: '分钟数据', width: 100, children: vm.generateTable('minute') },
+        { field: 'hour', title: '小时数据', width: 100, children: vm.generateTable('hour') },
+        { field: 'day', title: '日数据', width: 100, children: vm.generateTable('day') }
       ]
     }
   },
   methods: {
-    formatter (row, { property }, cellValue, index) {
-      let value = ''
-      switch (property) {
-        case 'index':
-          value = comSerial(this.current, this.size, index)
-          break
-      }
-      return value || cellValue
-    }
   }
 }
 </script>

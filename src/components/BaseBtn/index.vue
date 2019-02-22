@@ -125,7 +125,7 @@ button {
   &.base-btn-switch {
     background: #4a9eda;
   }
-  &.base-btn-relation {
+  &.base-btn-poiRelation {
     background: #4a9eda;
   }
   &.base-btn-addQuota {
@@ -142,6 +142,15 @@ button {
   }
   &.base-btn-refresh {
     background: #4a9eda;
+  }
+  &.base-btn-sms {
+    background: #4a9eda;
+  }
+  &.base-btn-polluteRelation {
+    background: #4a9eda;
+  }
+  &.base-btn-editUp {
+    background: #efad4d;
   }
 }
 </style>

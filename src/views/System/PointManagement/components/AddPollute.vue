@@ -104,7 +104,7 @@ export default {
     initData () {
       if (this.rowData) {
         for (let key in this.form) {
-          this.form[key] = this.rowData[key] || ''
+          this.form[key] = this.rowData[key] === 0 ? 0 : this.rowData[key] || ''
         }
       }
     },

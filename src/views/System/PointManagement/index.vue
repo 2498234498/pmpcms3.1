@@ -48,7 +48,7 @@
             </el-switch>
           </el-row> -->
           <el-row v-if="item.type == 'btn'">
-            <base-btn type="relation" @click="pointInfo=scope.row,showPointInfo=true"></base-btn>
+            <base-btn type="poiRelation" @click="pointInfo=scope.row,showPointInfo=true"></base-btn>
             <base-btn type="edit" @click="edit(scope.row)"></base-btn>
             <base-btn type="delete" @click="del(scope.row)"></base-btn>
           </el-row>
@@ -80,7 +80,7 @@
 </template>
 
 <script>
-import { downFile, comSerial, flatChildrenId, deleteAfterCurrent } from '@/utils'
+import { downFile, comSerial, flatChildrenId, deleteAfterCurrent, getType } from '@/utils'
 import { EditForm, PointInformationFactor } from './components'
 import resizeMixin from '@/mixins/resize'
 import page from '@/mixins/page'
@@ -291,7 +291,7 @@ export default {
       }
       try {
         let res = await this.$api.sysPointExport(params)
-        if (typeof res === 'object') {
+        if (getType(res) === 'Blob') {
           downFile(res, `监控点配置报表${new Date().getTime()}.xls`)
         } else {
           this.$message.error('导出失败')

@@ -6,6 +6,7 @@ export default {
   },
   watch: {
     '$store.state.app.sidebar.opened' () {
+      clearTimeout(this.interval)
       this.interval = setTimeout(() => {
         this.pie && this.pie.resize()
       }, 800)

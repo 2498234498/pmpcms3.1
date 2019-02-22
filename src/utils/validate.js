@@ -60,3 +60,10 @@ export function validateNums (str) {
   const reg = /^(-|\+)?\d+(\.\d{1,2})?$/
   return reg.test(str)
 }
+
+
+// 不能为中文
+export function validateChinese (str) {
+  const reg = /[\u4E00-\u9FA5]/
+  return !reg.test(str)
+}

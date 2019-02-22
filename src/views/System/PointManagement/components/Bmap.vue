@@ -40,7 +40,8 @@ export default {
     show: {
       type: Boolean,
       default: false
-    }
+    },
+    degree: ''
   },
   data () {
     return {
@@ -97,12 +98,11 @@ export default {
       this.$nextTick(_ => {
         this.timer = setInterval(() => {
           try {
-            let map = this.$refs.bmap.echarts.getModel().getComponent('bmap').getBMap()
-            this.map = map
+            this.map = this.$refs.bmap.echarts.getModel().getComponent('bmap').getBMap()
             this.geoc = new window.BMap.Geocoder()
-            map.removeEventListener('click', this.mapClick)
-            map.addEventListener('click', this.mapClick)
-            map.clearOverlays() // 清空所有标注物
+            this.map.removeEventListener('click', this.mapClick)
+            this.map.addEventListener('click', this.mapClick)
+            this.map.clearOverlays() // 清空所有标注物
             this.lng = ''
             this.lat = ''
             clearInterval(this.timer)
@@ -114,8 +114,17 @@ export default {
                 // LARGE类型
                 type: window.BMAP_NAVIGATION_CONTROL_LARGE
               })
-              map.addControl(navigationControl)
+              this.map.addControl(navigationControl)
             }
+            // TODO 百度地图报错
+            // this.map.setZoom(15)
+            // if (this.degree) {
+            //   const degree = this.degree.split('/')
+            //   this.$nextTick(() => {
+            //     this.map.panTo(new window.BMap.Point(...degree))
+            //     this.mapClick({ point: { lng: Number(degree[0]), lat: Number(degree[1]) } })
+            //   })
+            // }
 
             this.init = true
           } catch (error) { }
@@ -123,12 +132,12 @@ export default {
       })
     },
     // 地图点击标记
-    mapClick ({ point }) {
+    mapClick ({ point, point: { lng }, point: { lat } }) {
       try {
         this.$refs.autocomplete.$refs.input.blur()
       } catch (error) {}
-      this.lng = Math.floor(point.lng * 1000) / 1000
-      this.lat = Math.floor(point.lat * 1000) / 1000
+      this.lng = Math.floor(lng * 1000) / 1000
+      this.lat = Math.floor(lat * 1000) / 1000
       let map = this.map
       let marker = new window.BMap.Marker(point)
       map.clearOverlays() // 清空所有标注物
@@ -200,6 +209,9 @@ export default {
   left: 5px;
   opacity: .9;
   line-height: 40px;
+  background: rgba(173, 138, 138, 0.1);;
+  padding: 0 4px;
+  border-radius: 4px;
   label, .search {
     float: left;
   }

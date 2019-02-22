@@ -97,6 +97,8 @@ export default {
           {
             name: '在线率统计',
             type: 'pie',
+            clockwise: false, // 最外圈颠倒顺序，防止跟第二圈的数据重叠
+            startAngle: 0,
             radius: ['55%', '67%'],
             label: {
               formatter: '{b}{c}({d})',

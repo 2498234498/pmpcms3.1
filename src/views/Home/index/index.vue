@@ -56,7 +56,7 @@
           border
           class="table"
           ref="configurationTable"
-          :height="mixinHeight - 70"
+          :height="mixinHeight - 70 - ( statisShow ? 280 : 0 )"
           highlight-current-row
           style="width: 100%"
           :cell-style="setColor"
@@ -81,7 +81,14 @@
                 align="center"
                 :prop="child.field"
                 :label="child.title"
-                :min-width="child.width" />
+                :min-width="child.width">
+                <template slot-scope="scope">
+                  <span title="双击查看详情" style="display: block;">{{ scope.row[item.field] }}</span>
+                </template>
+              </el-table-column>
+            </template>
+            <template v-slse slot-scope="{ row }">
+              <span title="双击查看详情" style="display: block;">{{ row[item.field] }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -117,7 +124,7 @@
         </ve-bmap>
       </el-tab-pane>
     </el-tabs>
-    <statistics>
+    <statistics :show.sync="statisShow">
       <industry-statistics :loading="loading" :data="industryStaData" slot="left"></industry-statistics>
       <industry-type :loading="loading" :data="tableData" slot="cent"></industry-type>
       <last-data slot="right"></last-data>
@@ -142,6 +149,7 @@ export default {
   },
   data () {
     return {
+      statisShow: true,
       startVal: 0,
       duration: 1000,
       styleArr: Object.freeze([
@@ -222,7 +230,7 @@ export default {
         return { value, name }
       }
     },
-    // 行业统计数据
+    // 在线率统计数据
     industryStaData () {
       let data = new Array(3).fill([])
       try {
@@ -327,7 +335,7 @@ export default {
             this.activeName = ''
             setTimeout(() => {
               this.activeName = 'dataChart'
-            }, 1)
+            }, 300)
           }
           this.loading = false
           this.loadingEcharts = false
@@ -358,18 +366,6 @@ export default {
         }
       } catch (error) {
         return {}
-      }
-    }
-  },
-  watch: {
-    tableData (n) {
-      if (n.length > 0) {
-        this.$nextTick(() => {
-          let row = document.getElementsByClassName('el-table__row')
-          for (let i = 0; i < row.length; i++) {
-            row[i].setAttribute('title', '双击查看详情')
-          }
-        })
       }
     }
   }
@@ -480,7 +476,9 @@ export default {
       left: 5px;
       opacity: 0.9;
       line-height: 40px;
-      background: #fff;
+      background: rgba(173, 138, 138, 0.1);;
+      padding: 0 4px;
+      border-radius: 4px;
       z-index: 2;
       label,
       .search {

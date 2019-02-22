@@ -112,7 +112,7 @@ a:hover {
   margin-top: 3px;
   margin-bottom: 3px;
   .query-bar {
-    margin: 0 10px;
+    margin-left: 10px;
     > label {
       font-weight: 100;
       font-size: 14px;
@@ -132,6 +132,9 @@ a:hover {
     > .btn {
       margin-top: 4px;
       margin-bottom: 5px; 
+    }
+    &:last-child {
+      margin-right: 0;
     }
   }
 }

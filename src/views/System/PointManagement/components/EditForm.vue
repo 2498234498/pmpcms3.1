@@ -79,7 +79,7 @@
         <el-button type="primary" @click="submit">确 定</el-button>
       </div>
     </el-dialog>
-    <Bmap :show.sync="mapShow" @submit="mapSubmit"></Bmap>
+    <Bmap :show.sync="mapShow" :degree="degree" @submit="mapSubmit"></Bmap>
     <add-pollute v-if="showAddPollute" :rowData="rowData" @cancel="showAddPollute=false" @addRowData="addRowData"></add-pollute>
   </div>
 </template>
@@ -149,7 +149,8 @@ export default {
         { property: 'polSumUnit', label: '总量单位', width: 70 },
         { property: 'protocolType', label: '编码类型', width: 70, type: 'type' },
         { property: 'polSumUnit', label: '操作', width: 130, type: 'btn' }
-      ]
+      ],
+      degree: ''
     }
   },
   computed: {
@@ -265,6 +266,7 @@ export default {
     },
     inputEvent (e) {
       this[e] && this[e]()
+      this.degree = this.form.values.latlon
     },
     // 地图显示
     mapEvent () {

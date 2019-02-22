@@ -45,7 +45,7 @@
         align="center">
         <template slot-scope="scope">
           <el-row v-if="item.type == 'btn'">
-            <base-btn type="relation" @click="showInformationFactor=true,informationData=scope.row"></base-btn>
+            <base-btn type="polluteRelation" @click="showInformationFactor=true,informationData=scope.row"></base-btn>
             <base-btn v-if="scope.row.protocolType == '00'" type="edit" @click="openDialog(scope.row)"></base-btn>
             <base-btn v-if="scope.row.protocolType == '00'" type="delete" @click="del(scope.row.polId)"></base-btn>
           </el-row>
@@ -109,7 +109,7 @@
 </template>
 
 <script>
-import { getDate, downFile, deleteAfterCurrent } from '@/utils'
+import { getDate, downFile, deleteAfterCurrent, getType } from '@/utils'
 import resizeMixin from '@/mixins/resize'
 import page from '@/mixins/page'
 import tableScrollHeight from '@/mixins/tableScrollHeight'
@@ -323,7 +323,7 @@ export default {
       this.exportLoading = true
       try {
         let res = await this.$api.polExport(this.params)
-        if (typeof res === 'object') {
+        if (getType(res) === 'Blob') {
           downFile(res, `污染物报表${getDate().replace(/[^0-9]/g, '')}.xls`)
         } else {
           this.$message.error('导出失败')

@@ -1,3 +1,4 @@
+import md5 from 'md5'
 /**
  * Created by jiachenpan on 16/11/18.
  */
@@ -28,29 +29,6 @@ export function parseTime (time = new Date().getTime(), cFormat = '{y}-{m}-{d} {
     return value || 0
   })
   return timeSrt
-}
-
-export function formatTime (time, option) {
-  time = +time * 1000
-  const d = new Date(time)
-  const now = Date.now()
-
-  const diff = (now - d) / 1000
-
-  if (diff < 30) {
-    return '刚刚'
-  } else if (diff < 3600) { // less 1 hour
-    return Math.ceil(diff / 60) + '分钟前'
-  } else if (diff < 3600 * 24) {
-    return Math.ceil(diff / 3600) + '小时前'
-  } else if (diff < 3600 * 24 * 2) {
-    return '1天前'
-  }
-  if (option) {
-    return parseTime(time, option)
-  } else {
-    return d.getMonth() + 1 + '月' + d.getDate() + '日' + d.getHours() + '时' + d.getMinutes() + '分'
-  }
 }
 
 /**
@@ -329,4 +307,29 @@ export function findTreeData (tree, id) {
     }
   }
   return obj
+}
+
+/**
+ * 获得值的类型，支持验证的值如下
+ * String,Number,Boolean,Object,Array,Function,null,undefined,File,Blob,Buffer,RegExp,Date,Error
+ * @param {*} value
+ */
+export function getType (value) {
+  return Object.prototype.toString.call(value).slice(8, -1)
+}
+
+/**
+ * 闭包缓存计算结果
+ * @param {Function} fn
+ */
+export function cached (fn) {
+  const cache = Object.create(null)
+  return function cachedFn (...str) {
+    // join 这里是针对有参数有多个的时候
+    const key = md5(str.join())
+    if (!cache[key]) {
+      cache[key] = fn(...str)
+    }
+    return cache[key]
+  }
 }

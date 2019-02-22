@@ -107,7 +107,7 @@ import resizeMixin from '@/mixins/resize'
 import datePickerMixin from '@/mixins/datePicker'
 import pageMixins from '@/mixins/page'
 import tableScrollHeight from '@/mixins/tableScrollHeight'
-import { getDate, downFile } from '@/utils'
+import { getDate, downFile, getType } from '@/utils'
 export default {
   name: 'PointJournal',
   data () {
@@ -186,7 +186,7 @@ export default {
           })
           let res = await this.$api.busDataPacketExport(this.params)
           this.$message.closeAll()
-          if (typeof res === 'object') {
+          if (getType(res) === 'Blob') {
             downFile(res, `监控点通讯报文日志${new Date().getTime()}.xls`)
             this.$message.success('导出成功')
           } else {

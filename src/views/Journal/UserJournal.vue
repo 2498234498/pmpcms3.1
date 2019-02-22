@@ -96,7 +96,7 @@ import resizeMixin from '@/mixins/resize'
 import datePickerMixin from '@/mixins/datePicker'
 import pageMixins from '@/mixins/page'
 import tableScrollHeight from '@/mixins/tableScrollHeight'
-import { getDate, downFile } from '@/utils'
+import { getDate, downFile, getType } from '@/utils'
 export default {
   name: 'UserJournal',
   data () {
@@ -155,7 +155,7 @@ export default {
         })
         let res = await this.$api.sysOperateLogExport(this.params)
         this.$message.closeAll()
-        if (typeof res === 'object') {
+        if (getType(res) === 'Blob') {
           downFile(res, `平台用户操作日志${new Date().getTime()}.xls`)
           this.$message.success('导出成功')
         } else {

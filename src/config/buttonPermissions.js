@@ -112,11 +112,11 @@ export default [
     type: 'switch',
     iconClass: 'iconfont icon-kaiguan'
   },
+  // 监控点信息因子
   {
     name: '信息因子',
     bId: 'B10016',
-    openUp: true,
-    type: 'relation',
+    type: 'poiRelation',
     iconClass: 'iconfont icon-guanlian'
   },
   {
@@ -153,5 +153,27 @@ export default [
     openUp: true,
     type: 'refresh',
     iconClass: 'iconfont icon-shuaxin'
+  },
+  {
+    name: '短信平台',
+    bId: 'B10021',
+    openUp: true,
+    type: 'sms',
+    iconClass: 'iconfont icon-duanxin'
+  },
+  // 污染物信息因子
+  {
+    name: '信息因子',
+    bId: 'B10022',
+    openUp: true,
+    type: 'polluteRelation',
+    iconClass: 'iconfont icon-guanlian'
+  },
+  {
+    name: '修改',
+    bId: 'B10023',
+    type: 'editUp',
+    openUp: true,
+    iconClass: 'el-icon-edit-outline'
   }
 ]
