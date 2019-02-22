@@ -1,9 +1,6 @@
 <template>
   <div class="equipment-cont WH">
-    <div class="equipment-left WH w220 lf">
-      <Point @check="check"></Point>
-    </div>
-    <div class="equipment-right WH w100-220 lf">
+    <div class="equipment-right WH">
       <el-tabs type="border-card"
         class="WH tabs">
         <el-tab-pane label="05国标反控"
@@ -44,7 +41,6 @@
 </template>
 
 <script>
-import Point from '@/components/Point'
 import cusTable from './components/cusTable'
 import cusForm from './components/cusForm'
 import mixin from './mixin'
@@ -59,7 +55,7 @@ const BTN_LIST = [
 ]
 export default {
   name: 'EquipmentCont',
-  components: { Point, cusTable, cusForm },
+  components: { cusTable, cusForm },
   mixins: [...mixin],
   data () {
     return {
@@ -106,14 +102,22 @@ export default {
     }
   },
   created () {
+    this.$bus.on('pointCheck', this.check)
     this.check()
   },
+  beforeDestroy () {
+    this.$bus.off('pointCheck')
+  },
   activated () {
+    this.$bus.on('pointCheck', this.check)
     this.notFirstView(_ => {
       if (this.check.$poiId !== this.$store.getters.pointCheck.id) {
         this.check()
       }
     })
+  },
+  deactivated () {
+    this.$bus.off('pointCheck')
   },
   watch: {
     'form.values.infoid' (val) {
@@ -403,7 +407,7 @@ export default {
 
 <style lang="scss" scoped>
 .equipment-right {
-  padding: 3px 0 3px 10px;
+  padding: 3px 0;
   .tabs {
     display: flex;
     flex-direction: column;

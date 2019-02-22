@@ -1,9 +1,6 @@
 <template>
   <div class="total-control WH">
-    <div class="total-control-left WH w220 lf">
-      <Point @check="check"></Point>
-    </div>
-    <div class="total-control-right WH w100-220 lf"
+    <div class="total-control-right WH"
       v-loading="loading"
       element-loading-text="拼命加载中"
       element-loading-spinner="el-icon-loading"
@@ -41,10 +38,9 @@
 
 <script>
 import components from './components'
-import Point from '@/components/Point'
 export default {
   name: 'TotalControl',
-  components: { ...components, Point },
+  components: { ...components },
   data () {
     return {
       loading: true,
@@ -56,14 +52,22 @@ export default {
     }
   },
   created () {
+    this.$bus.on('pointCheck', this.check)
     this.check()
   },
+  beforeDestroy () {
+    this.$bus.off('pointCheck')
+  },
   activated () {
+    this.$bus.on('pointCheck', this.check)
     this.notFirstView(_ => {
       if (this.check.$poiId !== this.$store.getters.pointCheck.id) {
         this.check()
       }
     })
+  },
+  deactivated () {
+    this.$bus.off('pointCheck')
   },
   watch: {
     tab: {
@@ -119,7 +123,7 @@ export default {
 
 <style lang="scss" scoped>
 .total-control-right {
-  padding: 3px 0 3px 10px;
+  padding: 3px 0;
   .tabs {
     display: flex;
     flex-direction: column;

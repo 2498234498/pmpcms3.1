@@ -29,6 +29,7 @@ export default {
   /*34 = TagsView   */
   /*55 = Logobar */
   height: calc(100vh - 50px - 34px - 9px);
+  width: calc(100% - 6px);
   position: relative;
   overflow: hidden;
   background: #fff;

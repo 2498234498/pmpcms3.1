@@ -1,9 +1,7 @@
 <template>
   <div class="point-info WH">
-    <div class="point-left w220">
-      <Point @check="check"></Point>
-    </div>
-    <el-scrollbar class="point-right w100-220"
+    <!-- <Point @check="check" class="point-left w220"></Point> -->
+    <el-scrollbar class="point-right WH"
       noresize
       v-resize="mixinResize"
       ref="container">
@@ -42,11 +40,10 @@
 
 <script>
 import components from './components'
-import Point from '@/components/Point'
 import resizeMixin from '@/mixins/resize'
 export default {
   name: 'PointInfo',
-  components: { ...components, Point },
+  components: { ...components },
   mixins: [resizeMixin],
   data () {
     return {
@@ -58,14 +55,22 @@ export default {
     }
   },
   created () {
+    this.$bus.on('pointCheck', this.check)
     this.check()
   },
+  beforeDestroy () {
+    this.$bus.off('pointCheck')
+  },
   activated () {
+    this.$bus.on('pointCheck', this.check)
     this.notFirstView(_ => {
       if ((this.check.$poiId !== this.$store.getters.pointCheck.id) || this.$route.query.isQuery) {
         this.check()
       }
     })
+  },
+  deactivated () {
+    this.$bus.off('pointCheck')
   },
   watch: {
     tabs: {

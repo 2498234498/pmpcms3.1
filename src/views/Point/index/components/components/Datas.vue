@@ -42,10 +42,11 @@ import { tableHeadTab, setTableHeadBr, cached } from '@/utils'
 
 // 格式化列表的超标和数据状态
 function formatExcessAndState (flag) {
-  return flag.split(',').map(e => {
+  return flag.split(',').reduce((prev, e) => {
     const [name, excess, state] = e.split('_')
-    return { name, excess, state }
-  })
+    prev[name] = { name, excess, state }
+    return prev
+  }, {})
 }
 
 export default {
@@ -118,8 +119,8 @@ export default {
       try {
         let { property } = column
         let { flage } = row
-        const flagArray = this.cachedFormat(flage)
-        const match = this.compExcessAndState(flagArray, property)
+        const flagObj = this.cachedFormat(flage)
+        const match = this.compExcessAndState(flagObj, property)
         if (!match) return {}
 
         return match.excess === '1' ? { 'color': 'red' } : {}
@@ -128,8 +129,8 @@ export default {
       }
     },
     cachedFormat: cached(formatExcessAndState),
-    compExcessAndState (array, property) {
-      return array.find(e => e.name === property.split('_')[2])
+    compExcessAndState (obj, property) {
+      return obj[property.split('_')[2]]
     },
     formatter (row, { property }, cellValue, index) {
       let value = ''
@@ -141,8 +142,8 @@ export default {
           if (property !== 'flage' && property.indexOf('_') >= 0 && cellValue !== undefined) {
             let { flage } = row
             if (flage) {
-              const flagArray = this.cachedFormat(flage)
-              const match = this.compExcessAndState(flagArray, property)
+              const flagObj = this.cachedFormat(flage)
+              const match = this.compExcessAndState(flagObj, property)
               if (match) {
                 const { excess, state } = match
                 if (excess === '1') {

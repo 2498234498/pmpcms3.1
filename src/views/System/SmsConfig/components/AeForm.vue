@@ -455,7 +455,7 @@ export default {
     validateLeast (rules, value, callback) {
       const { minuteContinuationOverproofMax, hourContinuationOverproofMax, offlineMaxTime } = this.operationForm.values
       if (!value && !minuteContinuationOverproofMax && !offlineMaxTime && !hourContinuationOverproofMax) {
-        callback(new Error('实时、分钟、小时、数采仪至少输入一项'))
+        callback(new Error('实时、分钟、小时、数采仪条件至少输入一项'))
       } else {
         callback()
       }

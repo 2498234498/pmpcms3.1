@@ -30,6 +30,8 @@ import Viewer from 'v-viewer'
 
 import cache from './mixins/cache'
 
+import bus from './utils/bus'
+
 import './utils/common'
 require('es6-promise').polyfill()
 
@@ -48,9 +50,11 @@ Vue.component(Vegauge.name, Vegauge)
 Vue.component(VePie.name, VePie)
 
 Vue.config.productionTip = false
-/* eslint-disable no-new */
+
 Vue.prototype.$api = api // this.$api...
 Vue.prototype.$isRepeat = isRepeat // 取消请求判断
+
+Vue.use(bus)
 
 /**
  * 获取配置信息
@@ -76,6 +80,7 @@ const getAdaptation = async () => {
 
 Vue.mixin(cache)
 
+/* eslint-disable no-new */
 const main = async () => {
   await getAdaptation()
   new Vue({

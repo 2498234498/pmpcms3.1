@@ -18,7 +18,7 @@ Vue.use(Router)
     title: 'title'               the name show in submenu and breadcrumb (recommend set)
     icon: 'svg-name'             the icon show in the sidebar,
     isFirst: false,              是否第一次进来，默认false：第一次进来，true：不是第一次进来
-    mobile: true                 是否隐藏系统菜单，默认不隐藏false
+    mobile: true                 是否隐藏系统菜单，默认不隐藏false，代表有没有监控点列表这个组件
   }
 * query: {
     isQuery: false               有缓存的页面，传这个值，强制执行页面内的逻辑

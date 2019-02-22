@@ -1,9 +1,6 @@
 <template>
   <div class="data-query WH">
-    <div class="data-query-left lf w220">
-      <Point @check="check"></Point>
-    </div>
-    <div class="data-query-right lf w100-220" v-resize="mixinResize" ref="container">
+    <div class="data-query-right WH" v-resize="mixinResize" ref="container">
       <div class="query-container clearfix" ref="queryContainer" onselectstart="return false">
         <query-bar label="数据类型：">
           <el-select v-model="queryValue.statisType"
@@ -125,7 +122,6 @@
 </template>
 
 <script>
-import Point from '@/components/Point'
 import customTime from './components/customTime'
 import resizeMixin from '@/mixins/resize'
 import chart from './mixin/chart'
@@ -150,7 +146,7 @@ function formatExcessAndState (retFlag, flag) {
 
 export default {
   name: 'DataQuery',
-  components: { Point, customTime },
+  components: { customTime },
   mixins: [resizeMixin, chart, page, tableScrollHeight],
   data () {
     return {
@@ -185,11 +181,16 @@ export default {
     }
   },
   created () {
+    this.$bus.on('pointCheck', this.check)
     // 接收从别的页面传过来的参数
     !!this.$route.query.statisType && (this.queryValue.statisType = Number(this.$route.query.statisType))
     this.query(this.queryValue)
   },
+  beforeDestroy () {
+    this.$bus.off('pointCheck')
+  },
   activated () {
+    this.$bus.on('pointCheck', this.check)
     this.notFirstView(_ => {
       if ((this.query.$pointId !== this.$store.getters.pointCheck.id) || this.$route.query.isQuery) {
         // 接收从别的页面传过来的参数
@@ -197,6 +198,9 @@ export default {
         this.check()
       }
     })
+  },
+  deactivated () {
+    this.$bus.off('pointCheck')
   },
   watch: {
     'queryValue.statisType' (val, od) {

@@ -156,8 +156,11 @@ a:hover {
 }
 
 .w100-220 {
-  width: calc(100% - 200px);
+  width: calc(100% - 212px) !important;
   padding-left: 10px;
+  margin-top: -1px;
+  margin-left: 0;
+  padding-top: 3px;
 }
 
 .lf {

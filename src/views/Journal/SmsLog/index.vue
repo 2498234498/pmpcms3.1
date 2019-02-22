@@ -72,7 +72,7 @@
             <base-btn type="detail"
               @click="detail(scope.row)"></base-btn>
           </el-row>
-          <span v-else>{{ formatter(scope.row, item.property, scope.row[item.property], scope.$index) }}</span>
+          <span v-else>{{ formatter(scope.row, item.field, scope.row[item.field], scope.$index) }}</span>
         </template>
       </el-table-column>
     </el-table>
@@ -120,8 +120,8 @@ export default {
         { field: 'sendTime', title: '发送时间', width: 150 },
         { field: 'reasonType', title: '类型', width: 50 },
         { field: 'areaId', title: '省市区', width: 150 },
-        { field: 'comName', title: '企业', width: 100 },
-        { field: 'poiName', title: '监控点', width: 100 },
+        { field: 'comName', title: '企业', width: 140 },
+        { field: 'poiName', title: '监控点', width: 140 },
         { field: 'mn', title: 'MN号', width: 130 },
         { field: 'sendResult', title: '发送结果', width: 80 },
         { type: 'btn', title: '操作', width: 100, fixed: 'right' }
@@ -192,7 +192,7 @@ export default {
           value = comSerial(this.current, this.size, index)
           break
         case 'areaId':
-          value = this.cachedAddr(this.city, cellValue, 'text')
+          value = this.cachedAddr(this.city, cellValue, 'text').join('')
           break
         case 'reasonType':
           value = reasonTypeSelect[cellValue]
@@ -208,10 +208,13 @@ export default {
       this.form = {
         sendTime,
         content,
-        receiver: receiver.split(';').map(e => {
-          const [ name, phone ] = e.split(',')
-          return `姓名：${name}，手机号：${phone}`
-        })
+        receiver: receiver.split(';').reduce((prev, e) => {
+          if (e) {
+            const [ name, phone ] = e.split(',')
+            return [...prev, `姓名：${name}，手机号：${phone}`]
+          }
+          return prev
+        }, []).join('<br/>')
       }
     }
   }

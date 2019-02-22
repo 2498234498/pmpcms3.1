@@ -8,7 +8,8 @@
       <div class="main-container">
         <!-- <navbar></navbar> -->
         <tags-view></tags-view>
-        <app-main></app-main>
+        <Point v-show="$route.meta.mobile" :class="$route.meta.mobile ? 'lf w220' : ''"></Point>
+        <app-main :class="$route.meta.mobile ? 'lf w100-220' : ''"></app-main>
       </div>
     </div>
   </div>
@@ -25,7 +26,8 @@ export default {
     Sidebar,
     AppMain,
     TagsView,
-    Logobar
+    Logobar,
+    Point: resolve => require(['@/components/Point'], resolve)
   },
   mixins: [ResizeMixin],
   computed: {

@@ -1,58 +1,64 @@
 <template>
-  <el-tabs type="border-card"
-    class="point-tabs"
-    v-loading="$store.state.point.loading"
-    element-loading-text="拼命加载中"
-    element-loading-spinner="el-icon-loading"
-    :element-loading-background="$store.getters.loadingColor">
-    <el-tab-pane class="tabs">
-      <span slot="label">监控点列表<i :class="$store.state.point.loading ? 'el-icon-loading' : 'el-icon-refresh'" @click="$store.dispatch('QueryPoint')" title="刷新监控点列表"></i></span>
-      <div class="point WH loading">
-        <div class="query">
-          <div class="query-bar">
-            <label>运行状态：</label>
-            <el-select v-model="runState"
-              @change="search()"
-              class="select"
-              size="mini">
-              <el-option v-for="(opt, opt_key) in runStateSelect"
-                :key="opt_key"
-                :label="opt.label"
-                :value="opt.value" />
-            </el-select>
+  <div class="point-concation">
+    <el-tabs type="border-card"
+      class="point-tabs"
+      v-loading="$store.state.point.loading"
+      element-loading-text="拼命加载中"
+      element-loading-spinner="el-icon-loading"
+      :element-loading-background="$store.getters.loadingColor">
+      <el-tab-pane class="tabs">
+        <span slot="label">监控点列表<i :class="$store.state.point.loading ? 'el-icon-loading' : 'el-icon-refresh'"
+            @click="$store.dispatch('QueryPoint')"
+            title="刷新监控点列表"></i></span>
+        <div class="point WH loading">
+          <div class="query">
+            <div class="query-bar">
+              <label>运行状态：</label>
+              <el-select v-model="runState"
+                @change="search()"
+                class="select"
+                size="mini">
+                <el-option v-for="(opt, opt_key) in runStateSelect"
+                  :key="opt_key"
+                  :label="opt.label"
+                  :value="opt.value" />
+              </el-select>
+            </div>
+            <div class="query-bar">
+              <el-input class="filter"
+                size="mini"
+                placeholder="搜索监控点 企业 MN号"
+                clearable
+                v-model="filterText">
+              </el-input>
+            </div>
           </div>
-          <div class="query-bar">
-            <el-input class="filter"
-              size="mini"
-              placeholder="搜索监控点 企业 MN号"
-              clearable
-              v-model="filterText">
-            </el-input>
+          <div class="point-tree">
+            <el-scrollbar style="height: 100%;"
+              ref="scroll">
+              <el-tree :data="$store.getters.pointData"
+                highlight-current
+                default-expand-all
+                :filter-node-method="filterNode"
+                :render-content="renderContent"
+                :indent="12"
+                ref="tree"
+                node-key="id"
+                @node-click="handleNodeClick">
+              </el-tree>
+            </el-scrollbar>
           </div>
         </div>
-        <div class="point-tree">
-          <el-scrollbar style="height: 100%;" ref="scroll">
-            <el-tree
-              :data="$store.getters.pointData"
-              highlight-current
-              default-expand-all
-              :filter-node-method="filterNode"
-              :render-content="renderContent"
-              :indent="12"
-              ref="tree"
-              node-key="id"
-              @node-click="handleNodeClick">
-            </el-tree>
-          </el-scrollbar>
+        <div class="description">
+          <p v-for="(item, index) in runStateSelect"
+            :key="index">
+            <i :class="`iconfont ${item.className}`"
+              v-if="item.className"></i>{{ item.className ? item.label : '' }}
+          </p>
         </div>
-      </div>
-      <div class="description">
-        <p v-for="(item, index) in runStateSelect" :key="index">
-          <i :class="`iconfont ${item.className}`" v-if="item.className"></i>{{ item.className ? item.label : '' }}
-        </p>
-      </div>
-    </el-tab-pane>
-  </el-tabs>
+      </el-tab-pane>
+    </el-tabs>
+  </div>
 </template>
 
 <script>
@@ -239,6 +245,8 @@ export default {
         let processId = check.id
         // id 原始数据
         this.$emit('check', processId, data)
+
+        this.$bus.emit('pointCheck', processId, data)
       }
     },
     watch (id) {
@@ -263,6 +271,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.point-concation {
+  /*50 = navbar  */
+  /*34 = TagsView   */
+  /*55 = Logobar */
+  height: calc(100vh - 50px - 34px - 15px);
+  position: relative;
+  top: -1px;
+  padding: 3px;
+  margin-left: 3px;
+  box-sizing: content-box;
+  background: #fff;
+}
 .point-tabs {
   margin-top: 3px;
   height: calc(100% - 3px);
@@ -353,10 +373,10 @@ export default {
   position: relative;
   height: 72px;
   width: 100%;
-  background-color: rgba(0, 0, 0, .03);
+  background-color: rgba(0, 0, 0, 0.03);
   &::before {
     position: absolute;
-    content: ' ';
+    content: " ";
     height: 1px;
     width: 80%;
     top: 5px;
